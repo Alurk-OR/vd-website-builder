@@ -1,4 +1,4 @@
-﻿namespace WEProject.Models
+﻿namespace VD Website Builder.Models
 {
     public class VisualElement
     {
