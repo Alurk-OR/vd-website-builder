@@ -1,60 +1,160 @@
 ﻿@page "/"
-@using VDWebsiteBuilder.Models;
-<div class="app-grid">
-	<section class="panel tools">
-		<h4>Инструменты</h4>
-		<button class="btn" @onclick='() => Add("h1")'>+ Заголовок</button>
-		<button class="btn" @onclick='() => Add("p")'>+ Абзац</button>
-		@if (selectedElement != null)
-		{
-			<hr />
-			<h5>Редактирование</h5>
-			<label>Текст:</label>
-			<input class="input-text" @bind="selectedElement.Content" @bind:event="oninput" />
-			<label>Цвет:</label>
-			<input type="color" @bind="selectedElement.Color" />
-		}
-		<hr />
-		<button class="btn-clear" @onclick="() => elements.Clear()">Очистить</button>
-	</section>
-	<section class="panel preview">
-		<h4>Превью</h4>
-		<div class="canvas">
-			@foreach (var el in elements)
-			{
-				<div @onclick="() => Select(el)" class='@(el == selectedElement ? "selected" : "")'>
-					@if (el.Tag == "h1")
-					{
-						<h1 style="color:@el.Color">@el.Content</h1>
-					}
-					else if (el.Tag == "p")
-					{
+@inject IJSRuntime JS
 
-						<p style="color:@el.Color">@el.Content</p>
-					}
-				</div>
-			}
-		</div>
-	</section>
-	<section class="panel code-view">
-		<h4>Тренажер</h4>
-		@foreach (var el in elements)
-		{
-			<div class="code-card">
-				<code class="html-text">@el.GetHtmlCode()</code>
-				<div class="explanation">@el.GetExplanation()</div>
-			</div>
-		}
-	</section>
+<div class="app-grid">
+    <section class="panel tools">
+        <h4>Инструменты</h4>
+        <button class="btn btn-primary mb-2" @onclick='() => Add("h1")'>+ Заголовок</button>
+        <button class="btn btn-primary mb-2" @onclick='() => Add("p")'>+ Абзац</button>
+        <button class="btn btn-primary mb-2" @onclick='() => Add("img")'>+ Картинка</button>
+
+        @if (selectedElement != null)
+        {
+            <hr />
+            <div class="edit-box">
+                <h5>Редактирование</h5>
+                <label>Текст или URL:</label>
+                <input class="form-control mb-2" @bind="selectedElement.Content" @bind:event="oninput" />
+
+                <label>Размер (px):</label>
+                <input type="number" class="form-control mb-2" @bind="selectedElement.FontSize" @bind:event="oninput" />
+
+                <label>Выравнивание:</label>
+                <select class="form-select mb-2" @bind="selectedElement.TextAlign">
+                    <option value="left">Слева</option>
+                    <option value="center">Центр</option>
+                    <option value="right">Справа</option>
+                    <option value="justify">По ширине</option>
+                </select>
+
+                <label>Цвет текста:</label>
+                <input type="color" class="form-control form-control-color mb-2" @bind="selectedElement.Color" />
+            </div>
+        }
+        <hr />
+        <button class="btn btn-success w-100 mb-2" @onclick="ExportToHtml">Скачать сайт (.html)</button>
+        <button class="btn btn-danger w-100" @onclick="ClearAll">Очистить всё</button>
+    </section>
+
+    <section class="panel preview">
+        <h4>Превью</h4>
+        <div class="canvas border p-3 bg-white" style="min-height: 400px;">
+            @foreach (var el in elements)
+            {
+                <div @onclick="() => Select(el)"
+                     style="cursor:pointer; margin-bottom: 10px; border: @(el == selectedElement ? "2px solid blue" : "1px dashed transparent");">
+
+                    @if (el.Tag == "img")
+                    {
+                        <div style="text-align: @(el.TextAlign);">
+                            <img src="@el.Content" style="width: @(el.FontSize + "px"); height: auto;" />
+                        </div>
+                    }
+                    else
+                    {
+                        @if (el.Tag == "h1")
+                        {
+                            <h1 style="color: @(el.Color); font-size: @(el.FontSize + "px"); text-align: @(el.TextAlign);">
+                                @el.Content
+                            </h1>
+                        }
+                        else if (el.Tag == "p")
+                        {
+                            <p style="color: @(el.Color); font-size: @(el.FontSize + "px"); text-align: @(el.TextAlign);">
+                                @el.Content
+                            </p>
+                        }
+                    }
+                </div>
+            }
+        </div>
+    </section>
+
+    <section class="panel code-view">
+        <h4>Тренажер (Код)</h4>
+        <div class="code-container p-2 bg-dark text-light">
+            @foreach (var el in elements)
+            {
+                <div class="mb-3 border-bottom border-secondary pb-2">
+                    <code style="color: #61dafb; display: block; word-break: break-all;">@el.GetHtmlCode()</code>
+                    <small class="text-muted">@el.GetExplanation()</small>
+                </div>
+            }
+        </div>
+    </section>
 </div>
+
 @code {
-	private List<VisualElement> elements = new();
-	private VisualElement? selectedElement;
-	private void Add(string tag)
-	{
-		var newEl = new VisualElement { Tag = tag, Content = "Новый текст" };
-		elements.Add(newEl);
-		selectedElement = newEl;
-	}
-	private void Select(VisualElement el) => selectedElement = el;
+    private List<VisualElement> elements = new();
+    private VisualElement? selectedElement;
+
+    public class VisualElement
+    {
+        public string Tag { get; set; } = "p";
+        public string Content { get; set; } = "Новый текст";
+        public string Color { get; set; } = "#000000";
+        public string FontSize { get; set; } = "18";
+        public string TextAlign { get; set; } = "left";
+
+        public string GetHtmlCode()
+        {
+            if (Tag == "img")
+                return $"<div style=\"text-align:{TextAlign}\"><img src=\"{Content}\" style=\"width:{FontSize}px;\"></div>";
+
+            return $"<{Tag} style=\"color:{Color}; font-size:{FontSize}px; text-align:{TextAlign};\">{Content}</{Tag}>";
+        }
+
+        public string GetExplanation()
+        {
+            if (Tag == "img") return "Тег <img> для вставки изображения.";
+            if (Tag == "h1") return "Тег <h1> определяет заголовок первого уровня.";
+            return "Тег <p> определяет текстовый абзац.";
+        }
+    }
+
+    private void Add(string tag)
+    {
+        var newEl = new VisualElement { Tag = tag };
+        if (tag == "img")
+        {
+            newEl.Content = "https://via.placeholder.com/150";
+            newEl.FontSize = "150";
+        }
+        else if (tag == "h1")
+        {
+            newEl.Content = "Заголовок";
+            newEl.FontSize = "32";
+        }
+
+        elements.Add(newEl);
+        selectedElement = newEl;
+    }
+
+    private void Select(VisualElement el) => selectedElement = el;
+
+    private void ClearAll()
+    {
+        elements.Clear();
+        selectedElement = null;
+    }
+
+    private async Task ExportToHtml()
+    {
+        var htmlBody = "";
+        foreach (var el in elements) htmlBody += el.GetHtmlCode();
+
+        var finalHtml = $@"<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <title>Мой сайт</title>
+    <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet'>
+</head>
+<body style='padding:40px;'>
+    <div class='container'>{htmlBody}</div>
+</body>
+</html>";
+
+        await JS.InvokeVoidAsync("downloadFile", "index.html", finalHtml);
+    }
 }
