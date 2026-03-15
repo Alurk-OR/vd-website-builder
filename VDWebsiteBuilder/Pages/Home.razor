@@ -71,13 +71,24 @@
     </section>
 
     <section class="panel code-view">
-        <h4>Тренажер (Код)</h4>
-        <div class="code-container p-2 bg-dark text-light">
+        <h4>Интерактивный тренажер</h4>
+        <div class="code-container">
             @foreach (var el in elements)
             {
-                <div class="mb-3 border-bottom border-secondary pb-2">
-                    <code style="color: #61dafb; display: block; word-break: break-all;">@el.GetHtmlCode()</code>
-                    <small class="text-muted">@el.GetExplanation()</small>
+                <div class="code-card mb-4 p-3 bg-dark rounded shadow-sm">
+                    <div class="p-2 mb-2" style="background: #1e1e1e; border-radius: 4px; font-family: monospace;">
+                        <code>@el.GetColoredHtml()</code>
+                    </div>
+                    <div class="explanation-list">
+                        @foreach (var prop in el.GetPropertyBreakdown())
+                        {
+                            <div class="d-flex border-bottom border-secondary py-1 small" style="color: #bbb;">
+                                <b class="text-info w-25">@prop.Key</b>
+                                <span class="w-25 text-warning">@prop.Value</span>
+                                <span class="ms-2"> — @prop.Desc</span>
+                            </div>
+                        }
+                    </div>
                 </div>
             }
         </div>
@@ -95,66 +106,73 @@
         public string Color { get; set; } = "#000000";
         public string FontSize { get; set; } = "18";
         public string TextAlign { get; set; } = "left";
-
-        public string GetHtmlCode()
+        public Microsoft.AspNetCore.Components.MarkupString GetColoredHtml()
         {
+            string tagColor = "#569cd6";
+            string attrColor = "#9cdcfe";
+            string valColor = "#ce9178";
+
             if (Tag == "img")
-                return $"<div style=\"text-align:{TextAlign}\"><img src=\"{Content}\" style=\"width:{FontSize}px;\"></div>";
+            {
+                return (Microsoft.AspNetCore.Components.MarkupString)$@"<span style='color:{tagColor}'>&lt;img</span> <span style='color:{attrColor}'>src</span>=<span style='color:{valColor}'>""{Content}""</span> <span style='color:{attrColor}'>style</span>=<span style='color:{valColor}'>""width:{FontSize}px;""</span><span style='color:{tagColor}'>&gt;</span>";
+            }
 
-            return $"<{Tag} style=\"color:{Color}; font-size:{FontSize}px; text-align:{TextAlign};\">{Content}</{Tag}>";
+            return (Microsoft.AspNetCore.Components.MarkupString)$@"<span style='color:{tagColor}'>&lt;{Tag}</span> <span style='color:{attrColor}'>style</span>=<span style='color:{valColor}'>""color:{Color}; font-size:{FontSize}px; text-align:{TextAlign};""</span><span style='color:{tagColor}'>&gt;</span>{Content}<span style='color:{tagColor}'>&lt;/{Tag}&gt;</span>";
         }
-
-        public string GetExplanation()
+        public List<(string Key, string Value, string Desc)> GetPropertyBreakdown()
         {
-            if (Tag == "img") return "Тег <img> для вставки изображения.";
-            if (Tag == "h1") return "Тег <h1> определяет заголовок первого уровня.";
-            return "Тег <p> определяет текстовый абзац.";
+            var list = new List<(string, string, string)>();
+            list.Add(("<" + Tag + ">", "Тег", "Тип элемента (заголовок, абзац или фото)."));
+            list.Add(("color", Color, "Цвет текста: задает оттенок шрифта."));
+            list.Add(("font-size", FontSize + "px", "Размер: высота символов в пикселях."));
+            list.Add(("text-align", TextAlign, "Выравнивание: положение текста в блоке."));
+            return list;
         }
     }
-
-    private void Add(string tag)
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFromBrowser();
+    }
+    private async Task Add(string tag)
     {
         var newEl = new VisualElement { Tag = tag };
-        if (tag == "img")
-        {
-            newEl.Content = "https://via.placeholder.com/150";
-            newEl.FontSize = "150";
-        }
-        else if (tag == "h1")
-        {
-            newEl.Content = "Заголовок";
-            newEl.FontSize = "32";
-        }
-
+        if (tag == "img") { newEl.Content = "https://via.placeholder.com/150"; newEl.FontSize = "150"; }
+        else if (tag == "h1") { newEl.Content = "Заголовок"; newEl.FontSize = "32"; }
         elements.Add(newEl);
         selectedElement = newEl;
+        await SaveToBrowser();
     }
-
-    private void Select(VisualElement el) => selectedElement = el;
-
-    private void ClearAll()
+    private async Task ClearAll()
     {
         elements.Clear();
         selectedElement = null;
+        await SaveToBrowser();
     }
-
+    private async Task SaveToBrowser()
+    {
+        var json = System.Text.Json.JsonSerializer.Serialize(elements);
+        await JS.InvokeVoidAsync("localStorage.setItem", "weblearn_project", json);
+    }
+    private async Task LoadFromBrowser()
+    {
+        var json = await JS.InvokeAsync<string>("localStorage.getItem", "weblearn_project");
+        if (!string.IsNullOrEmpty(json))
+        {
+            elements = System.Text.Json.JsonSerializer.Deserialize<List<VisualElement>>(json) ?? new();
+            StateHasChanged();
+        }
+    }
+    private void Select(VisualElement el) => selectedElement = el;
     private async Task ExportToHtml()
     {
         var htmlBody = "";
-        foreach (var el in elements) htmlBody += el.GetHtmlCode();
+        foreach (var el in elements)
+        {
+            if (el.Tag == "img") htmlBody += $"<div style='text-align:{el.TextAlign}'><img src='{el.Content}' style='width:{el.FontSize}px;'></div>";
+            else htmlBody += $"<{el.Tag} style='color:{el.Color}; font-size:{el.FontSize}px; text-align:{el.TextAlign};'>{el.Content}</{el.Tag}>";
+        }
 
-        var finalHtml = $@"<!DOCTYPE html>
-<html>
-<head>
-    <meta charset='utf-8'>
-    <title>Мой сайт</title>
-    <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet'>
-</head>
-<body style='padding:40px;'>
-    <div class='container'>{htmlBody}</div>
-</body>
-</html>";
-
+        var finalHtml = $"<!DOCTYPE html><html><head><meta charset='utf-8'><link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet'></head><body style='padding:40px;'><div class='container'>{htmlBody}</div></body></html>";
         await JS.InvokeVoidAsync("downloadFile", "index.html", finalHtml);
     }
 }
