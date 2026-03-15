@@ -1,4 +1,5 @@
 ﻿@page "/editor"
+@using System.Text.Json
 @inject IJSRuntime JS
 
 <div class="app-grid">
@@ -99,6 +100,7 @@
 </div>
 
 @code {
+    private const string StorageKey = "weblearn_project_save";
     private List<VisualElement> elements = new();
     private VisualElement? selectedElement;
 
@@ -145,6 +147,13 @@
         selectedElement = newEl;
         await SaveToBrowser();
     }
+    private async Task RemoveElement(VisualElement el)
+    {
+        elements.Remove(el);
+        if (selectedElement == el) selectedElement = null;
+
+        await SaveToBrowser();
+    }
     private async Task ClearAll()
     {
         elements.Clear();
@@ -153,16 +162,34 @@
     }
     private async Task SaveToBrowser()
     {
-        var json = System.Text.Json.JsonSerializer.Serialize(elements);
-        await JS.InvokeVoidAsync("localStorage.setItem", "weblearn_project", json);
+        try
+        {
+            var json = JsonSerializer.Serialize(elements);
+            await JS.InvokeVoidAsync("localStorage.setItem", StorageKey, json);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка сохранения: {ex.Message}");
+        }
     }
     private async Task LoadFromBrowser()
     {
-        var json = await JS.InvokeAsync<string>("localStorage.getItem", "weblearn_project");
-        if (!string.IsNullOrEmpty(json))
+        try
         {
-            elements = System.Text.Json.JsonSerializer.Deserialize<List<VisualElement>>(json) ?? new();
-            StateHasChanged();
+            var json = await JS.InvokeAsync<string>("localStorage.getItem", StorageKey);
+            if (!string.IsNullOrEmpty(json))
+            {
+                var restored = JsonSerializer.Deserialize<List<VisualElement>>(json);
+                if (restored != null)
+                {
+                    elements = restored;
+                    StateHasChanged();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка загрузки: {ex.Message}");
         }
     }
     private void Select(VisualElement el) => selectedElement = el;
@@ -177,14 +204,5 @@
 
         var finalHtml = $"<!DOCTYPE html><html><head><meta charset='utf-8'><link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet'></head><body style='padding:40px;'><div class='container'>{htmlBody}</div></body></html>";
         await JS.InvokeVoidAsync("downloadFile", "index.html", finalHtml);
-    }
-    private async Task RemoveElement(VisualElement el)
-    {
-        elements.Remove(el);
-        if (selectedElement == el)
-        {
-            selectedElement = null;
-        }
-        await SaveToBrowser();
     }
 }
