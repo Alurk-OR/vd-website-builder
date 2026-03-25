@@ -19,7 +19,7 @@
                     @if (!showUndo)
                     {
                         <button class="btn btn-info fw-bold text-white shadow-sm" @onclick="ExecuteMagic">
-                            Улучшить всё, попросив помощи у ???
+                            Улучшить блок, попросив помощи у ???
                         </button>
                     }
                     else
@@ -43,9 +43,9 @@
                 <input type="color" class="form-control form-control-color mb-2 w-100"
                        @bind="selectedElement.Color"
                        @bind:after="SaveToBrowser" />
-                <label>Размер шрифта (@selectedElement.FontSize px):</label>
+                <label>Размер(@selectedElement.FontSize px):</label>
                 <input type="range" class="form-range mb-2"
-                       min="10" max="100"
+                       min="10" max="1000"
                        @bind="selectedElement.FontSize"
                        @bind:after="SaveToBrowser" />
                 <label>Выравнивание:</label>

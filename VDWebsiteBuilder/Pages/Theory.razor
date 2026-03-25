@@ -1,10 +1,52 @@
 ﻿@page "/theory"
 
+<style>
+    .text-accent {
+        color: #8e24aa !important;
+    }
+
+    .theory-card {
+        transition: transform 0.3s ease;
+        border-radius: 15px !important;
+    }
+
+        .theory-card:hover {
+            transform: translateY(-5px);
+        }
+
+    .btn-purple {
+        background-color: #8e24aa !important;
+        border: none !important;
+        color: white !important;
+        transition: all 0.3s ease !important;
+    }
+
+        .btn-purple:hover {
+            background-color: #7b1fa2 !important;
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(142, 36, 170, 0.3) !important;
+        }
+
+    .link-purple {
+        color: #9c27b0 !important;
+        font-weight: 500;
+    }
+
+        .link-purple:hover {
+            color: #7b1fa2 !important;
+        }
+
+    .code-tag {
+        color: #ce93d8 !important;
+    }
+</style>
+
 <div class="container mt-5 pb-5">
     <div class="text-center mb-5">
         <h1 class="display-4 fw-bold">Структура HTML-документа</h1>
-        <p class="text-muted fs-5">Рассмотри следующий блок кода:</p>
+        <p class="text-muted fs-5">Рассмотрим следующий блок кода:</p>
     </div>
+
 
     <div class="card shadow-sm border-0 mb-5">
         <div class="card-header bg-dark text-white d-flex justify-content-between">
@@ -12,52 +54,53 @@
         </div>
         <div class="card-body bg-black p-0">
             <pre class="m-0 p-4"><code style="color: #dcdcdc; font-family: 'Consolas', monospace;">&lt;!DOCTYPE html&gt;
-&lt;<span style="color: #569cd6;">html</span> lang="ru"&gt;
-  &lt;<span style="color: #569cd6;">head</span>&gt;
-    &lt;<span style="color: #569cd6;">meta</span> charset="UTF-8"&gt;
-    &lt;<span style="color: #569cd6;">title</span>&gt;Название страницы&lt;/<span style="color: #569cd6;">title</span>&gt;
-  &lt;/<span style="color: #569cd6;">head</span>&gt;
-  &lt;<span style="color: #569cd6;">body</span>&gt;
-    &lt;<span style="color: #569cd6;">h1</span>&gt;Hello, World!&lt;/<span style="color: #569cd6;">h1</span>&gt;
-  &lt;/<span style="color: #569cd6;">body</span>&gt;
-&lt;/<span style="color: #569cd6;">html</span>&gt;</code></pre>
+&lt;<span class="code-tag">html</span> lang="ru"&gt;
+  &lt;<span class="code-tag">head</span>&gt;
+    &lt;<span class="code-tag">meta</span> charset="UTF-8"&gt;
+    &lt;<span class="code-tag">title</span>&gt;Название страницы&lt;/<span class="code-tag">title</span>&gt;
+  &lt;/<span class="code-tag">head</span>&gt;
+  &lt;<span class="code-tag">body</span>&gt;
+    &lt;<span class="code-tag">h1</span>&gt;Hello, World!&lt;/<span class="code-tag">h1</span>&gt;
+  &lt;/<span class="code-tag">body</span>&gt;
+&lt;/<span class="code-tag">html</span>&gt;</code></pre>
         </div>
     </div>
 
+
     <div class="row g-4">
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm">
+            <div class="card h-100 border-0 shadow-sm theory-card">
                 <div class="card-body">
-                    <h5 class="fw-bold text-primary">&lt;html&gt;</h5>
-                    <p class="text-secondary">Это корневой элемент страницы, благодаря которому браузер понимает, что всё содержимое внутри является HTML-документом. Весь код сайта обязан находиться между открывающим и закрывающим этим тегом.</p>
+                    <h5 class="fw-bold text-accent">&lt;html&gt;</h5>
+                    <p class="text-secondary small">Это корневой элемент страницы, благодаря которому браузер понимает, что всё содержимое является HTML-документом.</p>
                 </div>
             </div>
         </div>
 
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm">
+            <div class="card h-100 border-0 shadow-sm theory-card">
                 <div class="card-body">
-                    <h5 class="fw-bold text-primary">&lt;head&gt;</h5>
-                    <p class="text-secondary">Это технический раздел. Здесь подключаются шрифты, стили, скрипты, а также указывается кодировка. Контент внутри <code>head</code> не отображается на самой странице (кроме заголовка вкладки).</p>
+                    <h5 class="fw-bold text-accent">&lt;head&gt;</h5>
+                    <p class="text-secondary small">Это технический раздел. Контент внутри <code>head</code> не отображается на самой странице (кроме заголовка вкладки).</p>
                 </div>
             </div>
         </div>
 
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm">
+            <div class="card h-100 border-0 shadow-sm theory-card">
                 <div class="card-body">
-                    <h5 class="fw-bold text-primary">&lt;body&gt;</h5>
-                    <p class="text-secondary">Визуальный раздел. Всё, что вы видите в браузере, располагается исключительно здесь. Это «лицо» сайта.</p>
+                    <h5 class="fw-bold text-accent">&lt;body&gt;</h5>
+                    <p class="text-secondary small">Визуальный раздел. Всё, что вы видите в браузере, располагается исключительно здесь. Это «лицо» сайта.</p>
                 </div>
             </div>
         </div>
     </div>
 
     <div class="d-flex justify-content-between mt-5 align-items-center">
-        <a href="" class="btn btn-link text-decoration-none text-muted">На главную</a>
+        <a href="/" class="btn btn-link text-decoration-none link-purple">На главную</a>
         <div class="d-flex gap-3">
             <span class="text-muted align-self-center me-2 small d-none d-sm-inline">Изучили теорию? ВРЕМЯ ПРОБОВАТЬ!</span>
-            <a href="editor" class="btn btn-primary btn-lg px-5 fw-bold rounded-pill shadow-sm">Перейти в редактор</a>
+            <a href="editor" class="btn btn-purple btn-lg px-5 fw-bold rounded-pill shadow-sm">Перейти в редактор</a>
         </div>
     </div>
 </div>
