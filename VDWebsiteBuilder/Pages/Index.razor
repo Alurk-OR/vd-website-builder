@@ -1,18 +1,38 @@
 ﻿@page "/"
 
-<div class="container vh-100 d-flex flex-column justify-content-center align-items-center text-center">
-    <div class="card p-5 shadow-lg border-0" style="max-width: 600px; border-radius: 20px;">
-        <h1 class="display-3 fw-bold text-primary mb-3">WebLearn</h1>
-        <p class="fs-5 text-muted mb-4">
-            Интерактивный тренажер для тех, кто хочет создавать сайты, но из-за недостатка навыков с этим возникают проблемы.
-        </p>
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        min-height: 70vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        border-radius: 30px;
+        margin-top: 50px;
+    }
+
+    .btn-custom {
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+        .btn-custom:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+</style>
+
+<div class="container">
+    <div class="hero-section shadow-lg p-5 text-center">
+        <h1 class="display-3 fw-bold mb-3">VD Website Builder 🤡</h1>
+        <h2 class="mb-4">Начни свой путь к полноценной разработке сайтов!</h2>
+
+
         <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
-            <a href="/editor" class="btn btn-primary btn-lg px-5 shadow">Создать новый проект</a>
-        </div>
-        <div class="mt-4 pt-3 border-top">
-            <small class="text-secondary text-uppercase fw-bold" style="letter-spacing: 1px;">
-                Технологии: Blazor WASM • HTML5 • CSS3
-            </small>
+            <a href="theory" class="btn btn-light btn-lg px-5 py-3 fw-bold rounded-pill btn-custom">
+                Посмотреть на скелеты в шкафу 🦴
+            </a>
         </div>
     </div>
 </div>
