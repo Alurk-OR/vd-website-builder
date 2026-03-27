@@ -276,7 +276,6 @@
             <div class='container'>{htmlBody}</div>
         </body>
         </html>";
-
         await JS.InvokeVoidAsync("downloadFile", "index.html", finalHtml);
     }
     private string backupJson = "";
